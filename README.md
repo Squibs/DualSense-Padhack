@@ -23,7 +23,9 @@ Again I'm not experienced at all at this sort of thing so my explanations might 
 
 ## Wiring Guide
 
-<img src='./images/Wiring Guide.png' width='400'>
+<img src='./images/wiring-guide.jpg' width='1000'>
+
+You can use an arduino or a Pi Pico, I decided to use a Pi Pico to have enough pins to include a SSD1306 I2C screen to display button inputs. Otherwise you can leave out most of the green wires from the pico in this image.
 
 ## Used Equipment
 

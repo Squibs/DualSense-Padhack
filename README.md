@@ -159,9 +159,9 @@ I wanted to do more with this arduino clone, the original plan was to put in an 
 
 [Video of SOCD selection LED](https://imgur.com/ghfN2jp)
 
-[SOCD code with LED indicator code](https://pastebin.com/E89ZFXmf).
+*I changed/swapped the variable names on outs and ins, because otherwise it didn't really make sense in my head... For anyone that might end up using this. Looking back at it now, I really shouldn't have as not it doesn't make sense.*
 
-*I changed/swapped the variable names on outs and ins, because otherwise it didn't really make sense in my head... For anyone that might end up using this.*
+[SOCD code with LED indicator code](https://pastebin.com/E89ZFXmf).
 
 ## Putting it all together
 

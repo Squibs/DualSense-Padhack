@@ -61,6 +61,8 @@ btnR3 = Pin(19, Pin.IN, Pin.PULL_DOWN)
 btnL3 = Pin(20, Pin.IN, Pin.PULL_DOWN)
 btnTouch = Pin(21, Pin.IN, Pin.PULL_UP)
 
+btnChooseSOCD = Pin(22, Pin.IN, Pin.PULL_UP)
+
 upFlag = True
 downFlag = True
 leftFlag = True
@@ -79,6 +81,7 @@ homeFlag = True
 shareFlag = True
 optionsFlag = True
 touchFlag = True
+SOCDChangeFlag = True
 
 upFlag2 = False
 downFlag2 = False
@@ -98,6 +101,7 @@ homeFlag2 = False
 shareFlag2 = False
 optionsFlag2 = False
 touchFlag2 = False
+SOCDChangeFlag2 = False
 
 currentMillis = 0
 upPreviousMillis = 0
@@ -113,7 +117,8 @@ rightPreviousState = 0
 SOCD_mode = None
 SOCD_speech_text = ' '
 SOCD_last_value = ' '
-art_animation = 20
+art_animation_speed = 43
+art_animation_control = art_animation_speed
 art_animation_flag = True
 
 upRead = btnUpIN.value()
@@ -134,42 +139,6 @@ def save_SOCD_state(state):
     except:
         print('Could not save the SOCD state variable')
 
-
-# default - read SOCD from flash - don't save - no inputs currently
-if leftRead and rightRead and upRead and downRead:
-    # open JSON file and load SOCD state
-    try:
-        with open('savedata.json', 'r') as f:
-            data = json.load(f)
-            SOCD_mode = data['SOCD']
-    except:
-        SOCD_mode = 0
-        print('SOCD mode variable not found. Starting with default SOCD.')
-
-# left held down - save to flash
-elif leftRead == False and rightRead and upRead and downRead:
-    SOCD_mode = 0  # SOCD-N: left + right = neutral; up + down = neutral
-    save_SOCD_state(SOCD_mode)
-
-# right held down - save to flash
-elif rightRead == False and leftRead and upRead and downRead:
-    SOCD_mode = 1  # SOCD-U: left + right = neutral; down + up = up
-    save_SOCD_state(SOCD_mode)
-
-# up held down - save to flash
-elif upRead == False and rightRead and leftRead and downRead:
-    SOCD_mode = 2  # SOCD-L: left + right = last command wins; up + down = last command wins
-    save_SOCD_state(SOCD_mode)
-
-# down held down - save to flash
-elif downRead == False and rightRead and upRead and leftRead:
-    SOCD_mode = 3  # SOCD-LU: left + right = last command wins; up + down = up
-    save_SOCD_state(SOCD_mode)
-
-# up and down held down - save to flash
-elif downRead == False and upRead == False and leftRead and rightRead:
-    SOCD_mode = 4  # SOCD-R: raw output, but on dualsense: left + right = neutral; up + down = neutral
-    save_SOCD_state(SOCD_mode)
 
 ##### SOCD MODES #####
 
@@ -255,17 +224,6 @@ def useSOCD0():  # SOCD-N: left + right = neutral; up + down = neutral
         SOCD_speech_text = 'U+D:N'
     else:
         SOCD_speech_text = ' '
-
-    # render bubble & text once while held
-    # if SOCD_last_value != SOCD_speech_text:
-    #     SOCD_last_value = SOCD_speech_text
-
-    #     if SOCD_speech_text == ' ':
-    #         drawSpeechText('clear')
-    #         print('empty')
-    #     else:
-    #         drawSpeechText('clear')
-    #         drawSpeechText()
 
 
 def useSOCD1():  # SOCD-U: left + right = neutral; down + up = up
@@ -507,6 +465,7 @@ def useSOCD4():  # SOCD-R: raw output, but on dualsense: left + right = neutral;
     global btnDownOUT
     global btnLeftOUT
     global btnRightOUT
+    global SOCD_speech_text
 
     if upRead == False:  # if up is pressed
         # switch the output to actually output
@@ -533,6 +492,11 @@ def useSOCD4():  # SOCD-R: raw output, but on dualsense: left + right = neutral;
         btnRightOUT.low()
     if rightRead:
         btnRightOUT = Pin(rightOUT, Pin.IN)
+
+    if leftRead == False and rightRead == False and upRead == False and downRead == False:
+        SOCD_speech_text = ' WTF'
+    else:
+        SOCD_speech_text = ' '
 
 ##### Graphics Helpers #####
 
@@ -866,6 +830,54 @@ def drawArt(art):
     return artDict[art]()
 
 
+def chooseSOCD():
+    global SOCD_mode
+
+    if leftRead == False and rightRead and upRead and downRead:
+        SOCD_mode = 0  # SOCD-N: left + right = neutral; up + down = neutral
+        save_SOCD_state(SOCD_mode)
+
+    # right held down - save to flash
+    elif rightRead == False and leftRead and upRead and downRead:
+        SOCD_mode = 1  # SOCD-U: left + right = neutral; down + up = up
+        save_SOCD_state(SOCD_mode)
+
+    # up held down - save to flash
+    elif upRead == False and rightRead and leftRead and downRead:
+        SOCD_mode = 2  # SOCD-L: left + right = last command wins; up + down = last command wins
+        save_SOCD_state(SOCD_mode)
+
+    # down held down - save to flash
+    elif downRead == False and rightRead and upRead and leftRead:
+        SOCD_mode = 3  # SOCD-LU: left + right = last command wins; up + down = up
+        save_SOCD_state(SOCD_mode)
+
+    # up and down held down - save to flash
+    elif downRead == False and upRead == False and leftRead and rightRead:
+        SOCD_mode = 4  # SOCD-R: raw output, but on dualsense: left + right = neutral; up + down = neutral
+        save_SOCD_state(SOCD_mode)
+
+    # reset, but it's turning off the dualsense, so i dont think this is quite right.
+    # if something is wrong, you wouldn't really be able to run this anyway, because
+    # the loop would probably have stopped
+    # elif leftRead == False and downRead == False and rightRead == False and upRead:
+    #     machine.reset()
+
+    print('SOCD_mode: ', SOCD_mode)
+    graphics.fill_rect(84, 0, 44, 16, 0)
+    drawSOCDLabel(SOCD_mode)
+
+
+# check for eixisting SOCD file / create SOCD file on controller start
+try:
+    with open('savedata.json', 'r') as f:
+        data = json.load(f)
+        SOCD_mode = data['SOCD']
+except:
+    SOCD_mode = 0
+    print('SOCD mode variable not found. Starting with default SOCD.')
+
+
 # pre-draw buttons and labels
 print('SOCD_mode: ', SOCD_mode)
 oled.fill(0)
@@ -884,6 +896,14 @@ while True:
     downRead = btnDownIN.value()
     leftRead = btnLeftIN.value()
     rightRead = btnRightIN.value()
+
+    if btnChooseSOCD.value() == False and SOCDChangeFlag:
+        chooseSOCD()
+        SOCDChangeFlag = False
+        SOCDChangeFlag2 = True
+    elif btnChooseSOCD.value() and SOCDChangeFlag2:
+        SOCDChangeFlag = True
+        SOCDChangeFlag2 = False
 
     # run proper SOCD
     if SOCD_mode == 0:
@@ -1136,19 +1156,19 @@ while True:
         l3Flag2 = False
 
     # art animation control
-    art_animation -= 1
-    if art_animation <= 0:
-        art_animation = 20
+    art_animation_control -= 1
+    if art_animation_control <= 0:
+        art_animation_control = art_animation_speed
         art_animation_flag = True
-    elif art_animation == 10:
+    elif art_animation_control == round(art_animation_speed / 2):
         art_animation_flag = True
 
-    if art_animation > 10 and art_animation_flag:
+    if art_animation_control > round(art_animation_speed / 2) and art_animation_flag:
         drawArt('pirate1')
         drawArt('octopus1')
         drawArt('cat1')
         art_animation_flag = False
-    elif art_animation < 10 and art_animation_flag:
+    elif art_animation_control < round(art_animation_speed / 2) and art_animation_flag:
         drawArt('pirate2')
         drawArt('octopus2')
         drawArt('cat2')

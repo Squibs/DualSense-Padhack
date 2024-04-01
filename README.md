@@ -1,6 +1,15 @@
 # DualSense Padhack
 
-The following information is a combination of my previous padhack and my most recent. I wrote this guide for my last padhack, but have updated my latest one to use a Pi Pico instead of an arduino.
+<img src='./images/1.jpg' width='500'>
+<img src='./images/10.jpg' width='300'>
+
+The following information is a combination of my previous padhack and my most recent. I wrote this guide for my last padhack on reddit, but have updated my latest one to use a Pi Pico instead of an arduino.
+
+[My Reddit Razer Raion Padhack Post](https://www.reddit.com/r/fightsticks/comments/x4uc3p/3d_printed_hitbox_padhack_i_dont_even_play/)
+
+[My First Reddit DualSense Padhack Post](https://www.reddit.com/r/fightsticks/comments/160oms2/back_with_another_padhack_dualsense_padhack/)
+
+[**My Latest Reddit DualSense Padhack Post**](https://www.reddit.com/r/fightsticks/comments/1bri164/finally_happy_with_my_dualsense_padhack_3d_printed/)
 
 I figured I would document the process a bit more, for those who would like to make one themselves. I found myself jumping around to various places and not really being able to find exact answers half the time when I was making this. Being pretty unexperienced in making things like this or working with electronics in general made it a bit harder as well. This is only the second project I've ever really done, so my soldering skills aren't quite there yet. Read on if you want to read through my random rambling.
 

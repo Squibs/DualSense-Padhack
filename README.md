@@ -21,6 +21,10 @@ Again I'm not experienced at all at this sort of thing so my explanations might 
 
 ***As a pre-note to everything, I recommend leaving all daughterboards ribbons disconnected until you solder everything. The ribbon cables can only handle so many disconnections before the traces start to fray.***
 
+## Wiring Guide
+
+<img src='./images/Wiring Guide.png' width='400'>
+
 ## Used Equipment
 
 I recently upgraded my soldering iron, which is another reason why I wanted to try another padhack. I was previously using an ancient *Weller SP40L*, with a completely destroyed tip; as that is what I had laying around.

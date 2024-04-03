@@ -28,6 +28,18 @@ Again I'm not experienced at all at this sort of thing so my explanations might 
 
 You can use an arduino or a Pi Pico, I decided to use a Pi Pico to have enough pins to include a SSD1306 I2C screen to display button inputs. Otherwise you can leave out most of the green wires from the pico in this image.
 
+## Code Environment
+
+- Visual Studio Code
+- PlatformIO Extension
+- [PlatformIO Setup Instructions](https://arduino-pico.readthedocs.io/en/latest/platformio.html)
+
+Project originally was using MicroPython, however I noticed a good amount of lag or delay in the pins switching states or the buttons registering as being input. I reworked the code a bit, and while performance improved a good amount, I wasn't able to get 1 frame inputs on Street Fighter 6.
+
+I decided to switch to using the Arduino IDE which uses a very close variant of C++. That worked out so much better, although it took me a while to figure out how to convert what I had already made into the C++/Arduino environment.
+
+Now I've switched from the Arduino IDE to the PlatformIO extension, as I wanted to make my code neater and splitting the code into files with the Arduino IDE was not a great experience having to have "tabs" open to represent files.
+
 ## Used Equipment
 
 I recently upgraded my soldering iron, which is another reason why I wanted to try another padhack. I was previously using an ancient *Weller SP40L*, with a completely destroyed tip; as that is what I had laying around.

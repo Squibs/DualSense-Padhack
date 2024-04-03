@@ -112,6 +112,7 @@ const int art_animation_speed = 43;
 int art_animation_control = art_animation_speed;
 bool art_animation_flag = true;
 
+// core0 setup
 void setup() {
   Serial.begin(9600);  // Allows printlns / monitoring
 
@@ -129,18 +130,6 @@ void setup() {
   display.display();
   delay(2000);  // Pause for 2 seconds
 
-  // set d-pad in pins
-  pinMode(leftIN, INPUT_PULLUP);
-  pinMode(rightIN, INPUT_PULLUP);
-  pinMode(upIN, INPUT_PULLUP);
-  pinMode(downIN, INPUT_PULLUP);
-
-  // set d-pad out pins - starts as input for safety
-  pinMode(leftOUT, INPUT);
-  pinMode(rightOUT, INPUT);
-  pinMode(upOUT, INPUT);
-  pinMode(downOUT, INPUT);
-
   // all other button pins
   pinMode(btnSquare, INPUT_PULLUP);
   pinMode(btnTriangle, INPUT_PULLUP);
@@ -157,23 +146,6 @@ void setup() {
   pinMode(btnL3, INPUT_PULLDOWN);  // R3 & L3 are active Highs, opposite of the rest
   pinMode(btnTouch, INPUT_PULLUP);
   pinMode(btnChooseSOCD, INPUT_PULLUP);
-
-  // check if a saved socd mode exists, if not: create one
-  LittleFS.begin();
-  if (!LittleFS.exists("/SOCD_Data.txt")) {
-    LittleFS.mkdir("/SOCD_Data.txt");
-    File socd_file = LittleFS.open("/SOCD_Data.txt", "w");
-    socd_file.println(0);
-    socd_file.close();
-    SOCD_mode = 0;
-  } else {
-    // read existing socd mode
-    File socd_file = LittleFS.open("/SOCD_Data.txt", "r");
-    while (socd_file.available()) {
-      SOCD_mode = socd_file.readString().toInt();
-    }
-    socd_file.close();
-  }
 
   Serial.print("SOCD_mode: ");
   Serial.println(SOCD_mode);
@@ -194,7 +166,84 @@ void setup() {
   display.display();
 }
 
+// core1 setup - no idea if this is actually working or not
+void setup1() {
+  delay(2000);  // Pause for 2 seconds
+
+  // check if a saved socd mode exists, if not: create one
+  LittleFS.begin();
+  if (!LittleFS.exists("/SOCD_Data.txt")) {
+    LittleFS.mkdir("/SOCD_Data.txt");
+    File socd_file = LittleFS.open("/SOCD_Data.txt", "w");
+    socd_file.println(0);
+    socd_file.close();
+    SOCD_mode = 0;
+  } else {
+    // read existing socd mode
+    File socd_file = LittleFS.open("/SOCD_Data.txt", "r");
+    while (socd_file.available()) {
+      SOCD_mode = socd_file.readString().toInt();
+    }
+    socd_file.close();
+  }
+
+  // set d-pad in pins
+  pinMode(leftIN, INPUT_PULLUP);
+  pinMode(rightIN, INPUT_PULLUP);
+  pinMode(upIN, INPUT_PULLUP);
+  pinMode(downIN, INPUT_PULLUP);
+
+  // set d-pad out pins - starts as input for safety
+  pinMode(leftOUT, INPUT);
+  pinMode(rightOUT, INPUT);
+  pinMode(upOUT, INPUT);
+  pinMode(downOUT, INPUT);
+}
+
+// core0 loop
 void loop() {
+  // all other buttons
+  controlButtonVisualRender(btnSquare, squareFlag, squareFlag2);
+  controlButtonVisualRender(btnTriangle, triangleFlag, triangleFlag2);
+  controlButtonVisualRender(btnR1, r1Flag, r1Flag2);
+  controlButtonVisualRender(btnL1, l1Flag, l1Flag2);
+  controlButtonVisualRender(btnX, xFlag, xFlag2);
+  controlButtonVisualRender(btnCircle, circleFlag, circleFlag2);
+  controlButtonVisualRender(btnR2, r2Flag, r2Flag2);
+  controlButtonVisualRender(btnL2, l2Flag, l2Flag2);
+  controlButtonVisualRender(btnHome, homeFlag, homeFlag2);
+  controlButtonVisualRender(btnShare, shareFlag, shareFlag2);
+  controlButtonVisualRender(btnOptions, optionsFlag, optionsFlag2);
+  controlButtonVisualRender(btnR3, r3Flag, r3Flag2);
+  controlButtonVisualRender(btnL3, l3Flag, l3Flag2);
+  controlButtonVisualRender(btnTouch, touchFlag, touchFlag2);
+
+  // art animation control
+  art_animation_control -= 1;
+  if (art_animation_control <= 0) {
+    art_animation_control = art_animation_speed;
+    art_animation_flag = true;
+  } else if (art_animation_control == round(art_animation_speed / 2)) {
+    art_animation_flag = true;
+  }
+
+  if (art_animation_control > round(art_animation_speed / 2) && art_animation_flag) {
+    drawArt(0, 49, pirate1);
+    drawArt(17, 55, cat1);
+    drawArt(30, 48, sagat1);
+    drawArt(66, 49, squid1);
+  } else if (art_animation_control < round(art_animation_speed / 2) && art_animation_flag) {
+    drawArt(0, 49, pirate2);
+    drawArt(17, 55, cat2);
+    drawArt(30, 48, sagat2);
+    drawArt(66, 49, squid2);
+  }
+
+  display.display();
+}
+
+// core1 loop
+void loop1() {
   // read directional buttons current state
   currentMillis = millis();
   leftRead = digitalRead(leftIN);
@@ -242,44 +291,6 @@ void loop() {
   controlButtonVisualRender(downOUT, downFlag, downFlag2);
   controlButtonVisualRender(leftOUT, leftFlag, leftFlag2);
   controlButtonVisualRender(rightOUT, rightFlag, rightFlag2);
-  // all other buttons
-  controlButtonVisualRender(btnSquare, squareFlag, squareFlag2);
-  controlButtonVisualRender(btnTriangle, triangleFlag, triangleFlag2);
-  controlButtonVisualRender(btnR1, r1Flag, r1Flag2);
-  controlButtonVisualRender(btnL1, l1Flag, l1Flag2);
-  controlButtonVisualRender(btnX, xFlag, xFlag2);
-  controlButtonVisualRender(btnCircle, circleFlag, circleFlag2);
-  controlButtonVisualRender(btnR2, r2Flag, r2Flag2);
-  controlButtonVisualRender(btnL2, l2Flag, l2Flag2);
-  controlButtonVisualRender(btnHome, homeFlag, homeFlag2);
-  controlButtonVisualRender(btnShare, shareFlag, shareFlag2);
-  controlButtonVisualRender(btnOptions, optionsFlag, optionsFlag2);
-  controlButtonVisualRender(btnR3, r3Flag, r3Flag2);
-  controlButtonVisualRender(btnL3, l3Flag, l3Flag2);
-  controlButtonVisualRender(btnTouch, touchFlag, touchFlag2);
-
-  // art animation control
-  art_animation_control -= 1;
-  if (art_animation_control <= 0) {
-    art_animation_control = art_animation_speed;
-    art_animation_flag = true;
-  } else if (art_animation_control == round(art_animation_speed / 2)) {
-    art_animation_flag = true;
-  }
-
-  if (art_animation_control > round(art_animation_speed / 2) && art_animation_flag) {
-    drawArt(0, 49, pirate1);
-    drawArt(17, 55, cat1);
-    drawArt(30, 48, sagat1);
-    drawArt(66, 49, squid1);
-  } else if (art_animation_control < round(art_animation_speed / 2) && art_animation_flag) {
-    drawArt(0, 49, pirate2);
-    drawArt(17, 55, cat2);
-    drawArt(30, 48, sagat2);
-    drawArt(66, 49, squid2);
-  }
-
-  display.display();
 }
 
 void saveSOCD(int8_t SOCDToSave) {

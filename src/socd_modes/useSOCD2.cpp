@@ -103,17 +103,17 @@ void useSOCD2() {
   } else if ((!leftRead) && (!rightRead) && (upRead) && (downRead) && (leftPreviousMillis < rightPreviousMillis)) {
     SOCD_speech_text = "L+R:R";
   } else if ((!upRead) && (!downRead) && (leftRead) && (rightRead) && (downPreviousMillis > upPreviousMillis)) {
-    SOCD_speech_text = "U+D:U";
-  } else if ((!upRead) && (!downRead) && (leftRead) && (rightRead) && (downPreviousMillis < upPreviousMillis)) {
     SOCD_speech_text = "U+D:D";
+  } else if ((!upRead) && (!downRead) && (leftRead) && (rightRead) && (downPreviousMillis < upPreviousMillis)) {
+    SOCD_speech_text = "U+D:U";
   } else if ((!leftRead) && (!rightRead) && (!upRead || !downRead) && leftPreviousMillis > rightPreviousMillis) {
     SOCD_speech_text = "L+R:L";
   } else if ((!leftRead) && (!rightRead) && (!upRead || !downRead) && leftPreviousMillis < rightPreviousMillis) {
     SOCD_speech_text = "L+R:R";
   } else if ((!upRead) && (!downRead) && (!leftRead || !rightRead) && downPreviousMillis > upPreviousMillis) {
-    SOCD_speech_text = "U+D:U";
-  } else if ((!upRead) && (!downRead) && (!leftRead || !rightRead) && downPreviousMillis > upPreviousMillis) {
     SOCD_speech_text = "U+D:D";
+  } else if ((!upRead) && (!downRead) && (!leftRead || !rightRead) && downPreviousMillis > upPreviousMillis) {
+    SOCD_speech_text = "U+D:U";
   } else {
     SOCD_speech_text = " ";
   }

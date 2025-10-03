@@ -17,5 +17,7 @@ void drawSagat(String);
 void controlButtonRender();
 void controlDirectionalButtonsRender(uint8_t, bool& flag, bool& flag2);
 void controlButtonVisualRender(uint8_t, bool& flag, bool& flag2);
-void controlButtonVisualRenderHelper(uint8_t, bool);
+void drawButtonCirclesFilled(uint8_t, bool);
 void drawArt(uint8_t, uint8_t, const std::vector<std::vector<int>>& artToDraw);
+void buttonPressedLogger(arduino::String buttonName, bool color);
+void drawProgressBar(uint8_t x, uint8_t y, uint8_t w, uint8_t h);

@@ -18,12 +18,12 @@
 
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 // The pins for I2C are defined by the Wire-library.
-#define OLED_RESET -1                                                               // Reset pin # (or -1 if sharing Arduino reset pin)
-#define SCREEN_ADDRESS 0x3C                                                         ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32; 0x3C for my particular display which is 12x64
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire1, OLED_RESET, 400000);  // Wire1 for GP 26/27 instead of Wire0 for GP 4/5
+#define OLED_RESET -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+#define SCREEN_ADDRESS 0x3C // < See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32; 0x3C for my particular display which is 128x64
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire1, OLED_RESET);  // &Wire1 for GP 26/27 ... for Pico &Wire1 is for ISC1 pins and &Wire is for ISC0 pins
 U8G2_FOR_ADAFRUIT_GFX u8g2_for_adafruit_gfx;
 
-const uint8_t upIN = 0;
+const uint8_t upIN = 0; // GP VALUES || GP0 / Pin 1
 const uint8_t downIN = 1;
 const uint8_t leftIN = 2;
 const uint8_t rightIN = 3;
@@ -111,24 +111,30 @@ String SOCD_last_value = " ";
 const int art_animation_speed = 43;
 int art_animation_control = art_animation_speed;
 bool art_animation_flag = true;
+bool button_press_debug = true;
 
 // core0 setup
 void setup() {
   Serial.begin(9600);  // Allows printlns / monitoring
 
+  // set d-pad in pins
+  pinMode(leftIN, INPUT_PULLUP);
+  pinMode(rightIN, INPUT_PULLUP);
+  pinMode(upIN, INPUT_PULLUP);
+  pinMode(downIN, INPUT_PULLUP);
+
+  // set d-pad out pins - starts as input for safety
+  pinMode(leftOUT, INPUT);
+  pinMode(rightOUT, INPUT);
+  pinMode(upOUT, INPUT);
+  pinMode(downOUT, INPUT);
+
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
     Serial.println(F("SSD1306 allocation failed"));
-    for (;;)
-      ;  // Don't proceed, loop forever
+    for (;;);  // Don't proceed, loop forever
   }
   u8g2_for_adafruit_gfx.begin(display);
-
-  // Display logo
-  display.clearDisplay();
-  display.drawBitmap(0, 5, epd_bitmap_Squibs, 128, 64, WHITE);
-  display.display();
-  delay(2000);  // Pause for 2 seconds
 
   // all other button pins
   pinMode(btnSquare, INPUT_PULLUP);
@@ -147,8 +153,9 @@ void setup() {
   pinMode(btnTouch, INPUT_PULLUP);
   pinMode(btnChooseSOCD, INPUT_PULLUP);
 
-  Serial.print("SOCD_mode: ");
-  Serial.println(SOCD_mode);
+  // display 'squibs' logo and progress bar
+  // bar represents time for dualsense to turn on while holding a 'profile' button along with the ps button
+  drawProgressBar(0, 0, 128, 16);
 
   // initial render of buttons and labels
   display.clearDisplay();
@@ -168,7 +175,7 @@ void setup() {
 
 // core1 setup - no idea if this is actually working or not
 void setup1() {
-  delay(2000);  // Pause for 2 seconds
+  // delay(controllerTurnOnDelay);  // Pause for 2 seconds
 
   // check if a saved socd mode exists, if not: create one
   LittleFS.begin();
@@ -187,20 +194,11 @@ void setup1() {
     socd_file.close();
   }
 
-  // set d-pad in pins
-  pinMode(leftIN, INPUT_PULLUP);
-  pinMode(rightIN, INPUT_PULLUP);
-  pinMode(upIN, INPUT_PULLUP);
-  pinMode(downIN, INPUT_PULLUP);
-
-  // set d-pad out pins - starts as input for safety
-  pinMode(leftOUT, INPUT);
-  pinMode(rightOUT, INPUT);
-  pinMode(upOUT, INPUT);
-  pinMode(downOUT, INPUT);
+  Serial.print("SOCD_mode: ");
+  Serial.println(SOCD_mode);
 }
 
-// core0 loop
+// core0 loop; handles display output
 void loop() {
   // all other buttons
   controlButtonVisualRender(btnSquare, squareFlag, squareFlag2);
@@ -242,7 +240,7 @@ void loop() {
   display.display();
 }
 
-// core1 loop
+// core1 loop; handles reading inputs/SOCD
 void loop1() {
   // read directional buttons current state
   currentMillis = millis();
@@ -262,6 +260,8 @@ void loop1() {
   }
 
   // use already chosen/current/appropriate SOCD_mode
+  // these will say which direction is being output by the controller
+  // runs the logic each loop
   if (SOCD_mode == 0) {
     useSOCD0();  // left held down - SOCD-N: left + right = neutral; up + down = neutral
   } else if (SOCD_mode == 1) {
@@ -275,6 +275,7 @@ void loop1() {
   }
 
   // draw SOCD speech text and bubble if needed
+  // TODO: OFFLOAD TO OTHER CORE?
   if (SOCD_last_value != SOCD_speech_text) {
     SOCD_last_value = SOCD_speech_text;
     if (SOCD_speech_text == " ") {
@@ -291,6 +292,107 @@ void loop1() {
   controlButtonVisualRender(downOUT, downFlag, downFlag2);
   controlButtonVisualRender(leftOUT, leftFlag, leftFlag2);
   controlButtonVisualRender(rightOUT, rightFlag, rightFlag2);
+}
+
+void drawProgressBar(uint8_t x, uint8_t y, uint8_t w, uint8_t h) {
+  // show 'squibs' logo
+  display.clearDisplay();
+  display.drawBitmap(0, 11, epd_bitmap_Squibs, 128, 64, WHITE);
+  display.display();
+
+  bool loadingProfile = true;
+  
+  // text properties
+  String text = ""; // assume 6px per character (monospace)
+
+  const int profileButtons[4] = {btnTriangle, btnCircle, btnX, btnSquare};
+
+  for (int i = 0; i < 4; i++) {
+    if (digitalRead(profileButtons[i]) == LOW) {  // read held 'profile' dualsense button
+      switch (i) {
+        case 0: text = "Profile 1"; break;
+        case 1: text = "Profile 2"; break;
+        case 2: text = "Profile 3"; break;
+        case 3: text = "Profile 4"; break;
+      }
+    }
+  }
+
+  uint8_t textX = 37;
+  uint8_t textY = 4;
+  uint8_t charWidth = 6;
+  uint8_t charHeight = 8;
+  uint8_t textLen = text.length();
+  int16_t controllerTurnOnDelay = 3500; // how long it takes for dualsense to turn on when choosing a profile
+
+  // show loading bar if there is text (turning on dualsense with profile button held [takes slightly longer than normal])
+  if (text != "") {
+    // draw loading bar outline
+    display.drawRect(x, y, w, h, 1);
+    display.drawRect(x + w, y + h / 4, 3, h / 2, 1);
+    display.display();
+
+    // draw profile text for initial render frame
+    display.setTextColor(1);
+    display.setCursor(textX, textY);
+    display.print(text);
+    display.display();
+
+    // fill loading bar left to right over time
+    unsigned long startTime = millis();
+    int lastFill = 0;
+
+    while (true) {
+        unsigned long elapsed = millis() - startTime;
+        if (elapsed > controllerTurnOnDelay) elapsed = controllerTurnOnDelay;
+
+        // compute fill width based on elapsed time
+        int fillWidth = (elapsed * w) / controllerTurnOnDelay;
+
+        if (fillWidth != lastFill) {
+            // redraw loading bar outline
+            display.drawRect(x, y, w, h, 1);
+            display.drawRect(x + w, y + h / 4, 3, h / 2, 1);
+
+            // fill loading bar fillWidth
+            if (fillWidth > 0) {
+                display.fillRect(x + 1, y + 1, fillWidth, h - 2, 1);
+            }
+
+            // draw text normally
+            display.setTextColor(1, 0);
+            display.setCursor(textX, textY);
+            display.print(text);
+
+            // invert text pixels only under filled portion
+            for (int c = 0; c < textLen; c++) {
+                int charStartX = textX + c * charWidth;
+
+                for (int col = 0; col < charWidth; col++) {
+                    int globalX = charStartX + col;
+                    if (globalX <= x + fillWidth) {
+                        // invert vertical column of character
+                        for (int row = 0; row < charHeight; row++) {
+                            int color = display.getPixel(globalX, textY + row);
+                            display.drawPixel(globalX, textY + row, !color);
+                        }
+                    }
+                }
+            }
+
+            display.display();
+            lastFill = fillWidth;
+        }
+
+        if (elapsed >= controllerTurnOnDelay) break; // break loading bar animation regardless if finished
+    }
+  } else { // if no text show logo only; (likely turning on controller with previously used profile; we don't know what it was so no loading bar or text)
+    // show 'squibs' logo more 'centered' without loading bar it would look too far down
+    display.clearDisplay();
+    display.drawBitmap(0, 5, epd_bitmap_Squibs, 128, 64, WHITE);
+    display.display();
+    delay(1500);
+  }
 }
 
 void saveSOCD(int8_t SOCDToSave) {
@@ -547,100 +649,187 @@ void drawSpeechText(bool clear) {
   }
 }
 
+// positions of empty circles; what's a dict?
 void drawButtonCircles(uint8_t circleToRender) {
-  if (circleToRender == 4 || circleToRender == 0)
+  if (circleToRender == 4 || circleToRender == 0) {
     display.drawCircle(53, 55, 8, 1);  // up
-  if (circleToRender == 5 || circleToRender == 0)
+  }
+  if (circleToRender == 5 || circleToRender == 0) {
     display.drawCircle(31, 25, 7, 1);  // down
-  if (circleToRender == 6 || circleToRender == 0)
+  }
+  if (circleToRender == 6 || circleToRender == 0) {
     display.drawCircle(15, 25, 7, 1);  // left
-  if (circleToRender == 7 || circleToRender == 0)
+  }
+  if (circleToRender == 7 || circleToRender == 0) {
     display.drawCircle(47, 29, 7, 1);  // right
-  if (circleToRender == 8 || circleToRender == 0)
+  }
+  if (circleToRender == 8 || circleToRender == 0) {
     display.drawCircle(65, 25, 7, 1);  // square
-  if (circleToRender == 9 || circleToRender == 0)
+  }
+  if (circleToRender == 9 || circleToRender == 0) {
     display.drawCircle(81, 23, 7, 1);  // triangle
-  if (circleToRender == 10 || circleToRender == 0)
+  }
+  if (circleToRender == 10 || circleToRender == 0) {
     display.drawCircle(97, 23, 7, 1);  // r1
-  if (circleToRender == 11 || circleToRender == 0)
+  }
+  if (circleToRender == 11 || circleToRender == 0) {
     display.drawCircle(113, 24, 7, 1);  // l1
-  if (circleToRender == 12 || circleToRender == 0)
+  }
+  if (circleToRender == 12 || circleToRender == 0) {
     display.drawCircle(63, 41, 7, 1);  // x
-  if (circleToRender == 13 || circleToRender == 0)
+  }
+  if (circleToRender == 13 || circleToRender == 0) {
     display.drawCircle(79, 39, 7, 1);  // circle
-  if (circleToRender == 14 || circleToRender == 0)
+  }
+  if (circleToRender == 14 || circleToRender == 0) {
     display.drawCircle(95, 39, 7, 1);  // r2
-  if (circleToRender == 15 || circleToRender == 0)
+  }
+  if (circleToRender == 15 || circleToRender == 0) {
     display.drawCircle(111, 40, 7, 1);  // l2
-  if (circleToRender == 16 || circleToRender == 0)
+  }
+  if (circleToRender == 16 || circleToRender == 0) {
     display.drawCircle(4, 3, 3, 1);  // home
-  if (circleToRender == 17 || circleToRender == 0)
+  }
+  if (circleToRender == 17 || circleToRender == 0) {
     display.drawCircle(18, 3, 3, 1);  // share
-  if (circleToRender == 18 || circleToRender == 0)
+  }
+  if (circleToRender == 18 || circleToRender == 0) {
     display.drawCircle(32, 3, 3, 1);  // options
-  if (circleToRender == 19 || circleToRender == 0)
+  }
+  if (circleToRender == 19 || circleToRender == 0) {
     display.drawCircle(46, 3, 3, 1);  // r3
-  if (circleToRender == 20 || circleToRender == 0)
+  }
+  if (circleToRender == 20 || circleToRender == 0) {
     display.drawCircle(60, 3, 3, 1);  // l3
-  if (circleToRender == 21 || circleToRender == 0)
+  }
+  if (circleToRender == 21 || circleToRender == 0) {
     display.drawCircle(74, 3, 3, 1);  // touch
+  }
 }
 
-void controlButtonVisualRenderHelper(uint8_t circleToFill, bool color) {
-  if (circleToFill == 4)
+// debug messages for pressed/released buttons 
+void buttonPressedLogger(String buttonName, bool color) {
+  if (button_press_debug) {
+    if (color == 1) {
+      buttonName += " Pressed\n";
+    } else {
+      buttonName += " Released\n";
+    }
+
+    Serial.print(buttonName);
+  }
+}
+
+// positions of filled in circles
+void drawButtonCirclesFilled(uint8_t circleToFill, bool color) {
+  if (circleToFill == 4) {
     display.fillCircle(53, 55, 8, color);  // up
-  if (circleToFill == 5)
+    buttonPressedLogger("Up", color);
+  }
+
+  if (circleToFill == 5) {
     display.fillCircle(31, 25, 7, color);  // down
-  if (circleToFill == 6)
+    buttonPressedLogger("Down", color);
+  }
+
+  if (circleToFill == 6) {
     display.fillCircle(15, 25, 7, color);  // left
-  if (circleToFill == 7)
+    buttonPressedLogger("Left", color);
+  }
+
+  if (circleToFill == 7) {
     display.fillCircle(47, 29, 7, color);  // right
-  if (circleToFill == 8)
+    buttonPressedLogger("Right", color);
+  }
+
+  if (circleToFill == 8) {
     display.fillCircle(65, 25, 7, color);  // square
-  if (circleToFill == 9)
+    buttonPressedLogger("Square", color);
+  }
+
+  if (circleToFill == 9) {
     display.fillCircle(81, 23, 7, color);  // triangle
-  if (circleToFill == 10)
+    buttonPressedLogger("Triangle", color);
+  }
+
+  if (circleToFill == 10) {
     display.fillCircle(97, 23, 7, color);  // r1
-  if (circleToFill == 11)
+    buttonPressedLogger("R1", color);
+  }
+
+  if (circleToFill == 11) {
     display.fillCircle(113, 24, 7, color);  // l1
-  if (circleToFill == 12)
+    buttonPressedLogger("L1", color);
+  }
+
+  if (circleToFill == 12) {
     display.fillCircle(63, 41, 7, color);  // x
-  if (circleToFill == 13)
+    buttonPressedLogger("X", color);
+  }
+
+  if (circleToFill == 13) {
     display.fillCircle(79, 39, 7, color);  // circle
-  if (circleToFill == 14)
+    buttonPressedLogger("Circle", color);
+  }
+
+  if (circleToFill == 14) {
     display.fillCircle(95, 39, 7, color);  // r2
-  if (circleToFill == 15)
+    buttonPressedLogger("R2", color);
+  }
+
+  if (circleToFill == 15) {
     display.fillCircle(111, 40, 7, color);  // l2
-  if (circleToFill == 16)
+    buttonPressedLogger("L2", color);
+  }
+
+  if (circleToFill == 16) {
     display.fillCircle(4, 3, 3, color);  // home
-  if (circleToFill == 17)
+    buttonPressedLogger("Home", color);
+  }
+
+  if (circleToFill == 17) {
     display.fillCircle(18, 3, 3, color);  // share
-  if (circleToFill == 18)
+    buttonPressedLogger("Share", color);
+  }
+
+  if (circleToFill == 18) {
     display.fillCircle(32, 3, 3, color);  // options
-  if (circleToFill == 19)
+    buttonPressedLogger("Options", color);
+  }
+
+  if (circleToFill == 19) {
     display.fillCircle(46, 3, 3, color);  // r3
-  if (circleToFill == 20)
+    buttonPressedLogger("R3", color);
+  }
+
+  if (circleToFill == 20) {
     display.fillCircle(60, 3, 3, color);  // l3
-  if (circleToFill == 21)
+    buttonPressedLogger("L3", color);
+  }
+
+  if (circleToFill == 21) {
     display.fillCircle(74, 3, 3, color);  // touch
+    buttonPressedLogger("Touch", color);
+  }
 }
 
+// controls the rendering of the buttons; whether they are to be rendered as pressed or not
 void controlButtonVisualRender(uint8_t direction, bool& flag, bool& flag2) {
   uint8_t readButton = digitalRead(direction);
   if (direction == 4 || direction == 5 || direction == 6 || direction == 7) {
     readButton = !gpio_get_dir(direction);
   } else if (direction == 19 || direction == 20) {
-    readButton = !readButton;  // R3 & L3 are opposite to the rest
+    readButton = !readButton;  // R3 & L3 are opposite to the rest; always read as being pressed
   }
 
   if (!readButton && flag) {
     flag = false;
     flag2 = true;
-    controlButtonVisualRenderHelper(direction, !flag);
+    drawButtonCirclesFilled(direction, !flag);
   } else if (readButton && flag2) {
     flag = true;
     flag2 = false;
-    controlButtonVisualRenderHelper(direction, !flag);
+    drawButtonCirclesFilled(direction, !flag);
     drawButtonCircles(direction);
     drawButtonLabels(direction);
   }

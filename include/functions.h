@@ -21,3 +21,8 @@ void drawButtonCirclesFilled(uint8_t, bool);
 void drawArt(uint8_t, uint8_t, const std::vector<std::vector<int>>& artToDraw);
 void buttonPressedLogger(arduino::String buttonName, bool color);
 void drawProgressBar(uint8_t x, uint8_t y, uint8_t w, uint8_t h);
+void init_battery_adc();
+float read_battery_percent();
+float read_vsys();
+void drawBatteryGauge();
+void drawBatteryPercent(int stage);

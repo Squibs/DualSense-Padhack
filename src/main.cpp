@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "hardware/adc.h"
 #include "LittleFS.h"  // LittleFS is declared
 #include "art.h"
 #include "functions.h"
@@ -112,10 +113,14 @@ const int art_animation_speed = 43;
 int art_animation_control = art_animation_speed;
 bool art_animation_flag = true;
 bool button_press_debug = true;
+uint32_t lastBatteryCheck = -30000;
+int batteryStage = 0;
 
 // core0 setup
 void setup() {
   Serial.begin(9600);  // Allows printlns / monitoring
+
+  init_battery_adc(); // initiate battery adc for reading levels
 
   // set d-pad in pins
   pinMode(leftIN, INPUT_PULLUP);
@@ -162,6 +167,7 @@ void setup() {
   drawButtonCircles(0);  // all
   drawButtonLabels(0);   // all
   drawSOCDLabels();
+  drawBatteryGauge();
 
   // draw Squibs text: bottom right
   display.setTextSize(1);
@@ -235,6 +241,14 @@ void loop() {
     drawArt(17, 55, cat2);
     drawArt(30, 48, sagat2);
     drawArt(66, 49, squid2);
+  }
+
+  // check battery level and redraw, limited to every 30secs
+  if (millis() - lastBatteryCheck > 30000) {
+    batteryStage = (int)(read_battery_percent() / 3.03f);
+    lastBatteryCheck = millis();
+    Serial.printf("Battery Stage (1-33): %d\n", batteryStage);
+    drawBatteryPercent(batteryStage);
   }
 
   display.display();
@@ -586,6 +600,18 @@ void drawButtonLabels(uint8_t labelToRender) {
   }
 }
 
+void drawBatteryGauge() {
+  
+    display.drawLine(123,16,123,48,1); // left line
+
+    display.drawLine(123,16,124,16,1); // top line
+    display.drawLine(123,48,124,48,1); // bottom line
+
+    display.drawLine(123,24,124,24,1); // section lines
+    display.drawLine(123,32,124,32,1);
+    display.drawLine(123,40,124,40,1);
+}
+
 void drawArt(uint8_t artX, uint8_t artY, const std::vector<std::vector<int> >& artToDraw) {
   for (int i = 0; i < artToDraw.size(); i++) {
     for (int j = 0; j < artToDraw[i].size(); j++) {
@@ -833,4 +859,33 @@ void controlButtonVisualRender(uint8_t direction, bool& flag, bool& flag2) {
     drawButtonCircles(direction);
     drawButtonLabels(direction);
   }
+}
+
+void init_battery_adc() {
+  adc_init();
+  adc_gpio_init(29); // GP29 is the VSYS monitor pin
+  adc_select_input(3); // channel 3 = internal VSYS/3 divider
+}
+
+float read_vsys() {
+  adc_select_input(3);
+  uint16_t raw = adc_read();
+  // 12-bit ADC (0-4095), 3.3V reference, internal 1/3 divider
+  return (raw / 4095.0f) * 3.3f * 3.0f;
+}
+
+float read_battery_percent() {
+  float vbat = read_vsys();
+  float percent = (vbat - 3.0f) / (4.2f - 3.0f) * 100.0f;
+  if (percent < 0) percent = 0;
+  if (percent > 100) percent = 100;
+  return percent;
+}
+
+void drawBatteryPercent(int stage) {
+  // Original y axis is 16, right past yellow
+  // 33 pixels tall to get to where I want the bottom to be
+  // rectangles fill from top to bottom, so have to fake battery going down
+  // by taking away then adding to get the right location for the battery bar
+  display.fillRect(126, (16 + (33 - stage)), 2, stage, 1);
 }

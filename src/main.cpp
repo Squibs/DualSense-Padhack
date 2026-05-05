@@ -245,9 +245,9 @@ void loop() {
 
   // check battery level and redraw, limited to every 30secs
   if (millis() - lastBatteryCheck > 30000) {
-    batteryStage = (int)(read_battery_percent() / 3.03f);
+    batteryStage = max(1, (int)(read_battery_percent() / 3.03f));
     lastBatteryCheck = millis();
-    Serial.printf("Battery Stage (1-33): %d\n", batteryStage);
+    Serial.printf("Battery Stage (1-33): %d | Raw VSYS: %.2fV | Percent: %.1f%%\n", batteryStage, read_vsys(), read_battery_percent());
     drawBatteryPercent(batteryStage);
   }
 
@@ -863,20 +863,23 @@ void controlButtonVisualRender(uint8_t direction, bool& flag, bool& flag2) {
 
 void init_battery_adc() {
   adc_init();
-  adc_gpio_init(29); // GP29 is the VSYS monitor pin
-  adc_select_input(3); // channel 3 = internal VSYS/3 divider
+  adc_gpio_init(28); // GP28 = ADC2
+  adc_select_input(2); // 2 = adc2/gp28
 }
 
 float read_vsys() {
-  adc_select_input(3);
+  adc_select_input(2);
   uint16_t raw = adc_read();
   // 12-bit ADC (0-4095), 3.3V reference, internal 1/3 divider
-  return (raw / 4095.0f) * 3.3f * 3.0f;
+  float vpin = (raw / 4095.0f) * 3.3f;
+  return vpin * 1.4533f * 1.0518f; // undo the 100k ohm + 220k ohm voltage divider
 }
 
 float read_battery_percent() {
   float vbat = read_vsys();
-  float percent = (vbat - 3.0f) / (4.2f - 3.0f) * 100.0f;
+  // 3.0v = dead, 4.35v = full charge limit (theoretical)
+  // 3.5v = dead, 4.22v = full (actual as of now)
+  float percent = (vbat - 3.5f) / (4.22f - 3.5f) * 100.0f;
   if (percent < 0) percent = 0;
   if (percent > 100) percent = 100;
   return percent;

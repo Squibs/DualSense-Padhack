@@ -44,7 +44,7 @@ Now I've switched from the Arduino IDE to the PlatformIO extension, as I wanted 
 
 I recently upgraded my soldering iron, which is another reason why I wanted to try another padhack. I was previously using an ancient *Weller SP40L*, with a completely destroyed tip; as that is what I had laying around.
 
-<img src='https://imgur.com/EeueTXQ.jpg' width='250'>
+<img src='./images/15.jpeg' width='250'>
 
 I'm not certain I would have been able to do this project with the soldering iron I had previously. It would have been a real challenge for sure, as some of these soldering points are very small.
 
@@ -70,7 +70,7 @@ There were slight differences in my controller but for the most part these two v
 - [Dualsense Disassembly](https://www.youtube.com/watch?v=viqj_MWjb4I)
 - [Trigger Disassembly](https://www.youtube.com/watch?v=8VBZ1upH93w)
 
-<img src='https://imgur.com/jay16dr.jpg' width='250'>
+<img src='./images/16.jpeg' width='250'>
 
 After getting everything disassembled, I started with completely removing the analog sticks from the pcb. I wanted to make everything as low profile as possible. It's entirely possible to leave the analog sticks in place if you do not wish to remove them (maybe you have a larger case/controller you are putting this into). Also as previously stated the controller I'm using has stick drift, so I would have had to replace one/two potentiometers anyway.
 
@@ -78,24 +78,24 @@ I don't have a hot air station, and I found removing these analog sticks pretty 
 
 I ended up scratching the pcb removing one of the analog stick potentiometers, but luckily everything seems to be working just fine.
 
-<img src='https://imgur.com/WBVeNk3.jpg' width='250'>
+<img src='./images/17.jpeg' width='250'>
 
 ## Wiring Most Face Buttons (dpad, square, circle, triangle, x)
 
 After getting both analog sticks off I worked on getting most of the face button wires soldered/wired on. Following the information /u/fluffhead123 gave in their post, I used a fiberglass pen/brush to scrape the carbon contact points on the face of the pcb to have a place to solder to. Used 30 AWG wire.
 
-<img src='https://imgur.com/q8uSTKa.jpg' width='250'>
+<img src='./images/18.jpeg' width='250'>
 
 ## Zeroing Removed Analog Sticks
 
 After those were finally barely hanging on, I moved onto getting the analog sticks *zeroed* out, again following information from /u/fluffhead123 in their post. Using 1k resistors. Used both sides of the board, just because it was slightly easier for me not having to solder multiple things to one point on one side. [More information](https://acidmods.com/forum/index.php?topic=44906.0) about how this is working from presumably /u/fluffhead123 and acidmod RDC on the acidmod forums.
 
-<img src='https://imgur.com/htnurxr.jpg' width='250'>
-<img src='https://imgur.com/zK0bf2n.jpg' width='250'>
+<img src='./images/19.jpeg' width='250'>
+<img src='./images/20.jpeg' width='250'>
 
 They ended up being slightly not zeroed, but I tested it in some games and it seemed to not cause any problems. [Controller test website](https://hardwaretester.com/gamepad)
 
-<img src='https://imgur.com/VvWc8i2.jpg' width='450'>
+<img src='./images/21.png' width='450'>
 
 ## Wiring Trigger Buttons (L1/L2, R1/R2)
 
@@ -105,8 +105,8 @@ From here I moved onto wiring the trigger buttons. These are located on daughter
 
 *[RDC on the acidmod fourms](https://acidmods.com/forum/index.php/topic,44714.150.html#subject_339165), only need to mess with resistors for l2/r2 if you unplug that small membrane piece from the daughterboards. If you scroll down there's more information a few posts later about how you could go about going without this small membrane piece or remove the daughterboards entirely?*
 
-<img src='https://imgur.com/ih1esya.jpg' width='250'>
-<img src='https://imgur.com/RLgpz6s.jpg' width='250'>
+<img src='./images/21.jpeg' width='250'>
+<img src='./images/22.jpeg' width='250'>
 
 I was having issues after wiring these up with the trigger always reading as being pressed. It turns out the small flexible membrane piece is necessary to have connected to the daughterboards; these are the parts that would normally read the trigger presses. After connecting these back in the trigger daughterboards, the triggers read as no longer being pressed and worked how they should.
 
@@ -118,18 +118,18 @@ Next I wired up the start and share buttons. I saw there were several ways to wi
 - For my controller, I found for the share button I needed to solder to the outer ring, and not the inner circle.
 - Then I messed with the mute button and found I needed to solder to the outer ring and not the inner circle. Although again on the acid mod forums RDC mentions something about this button be an [active lo](https://acidmods.com/forum/index.php/topic,44714.30.html#subject_338164) button, I'm not sure if that matters ONLY for interfacing with another board/chip as they mention or what, which comes up later for the L3 and R3 buttons. Again, I'm pretty new to all of this. *I end up not using the mics or this button in the end.*
 
-<img src='https://imgur.com/jZtP8UT.jpg' width='250'>
-<img src='https://imgur.com/XrqvOqq.jpg' width='250'>
-<img src='https://imgur.com/r4CIID3.jpg' width='250'>
-<img src='https://imgur.com/mc8JSAT.jpg' width='250'>
+<img src='./images/23.jpeg' width='250'>
+<img src='./images/24.jpeg' width='250'>
+<img src='./images/25.jpeg' width='250'>
+<img src='./images/26.jpeg' width='250'>
 
 ## Wiring L3/R3 Buttons
 
 Next I worked on getting the L3 and R3 buttons working. As mentioned, these are active lo buttons, which RDC [explains](https://acidmods.com/forum/index.php/topic,44714.30.html#subject_338411). So to get these to work, I needed to solder two wires for each button.
 
-<img src='https://imgur.com/kSp47kA.jpg' width='250'>
-<img src='https://imgur.com/ZwHX8j4.jpg' width='250'>
-<img src='https://imgur.com/slSKHuz.jpg' width='250'>
+<img src='./images/27.jpeg' width='250'>
+<img src='./images/28.jpeg' width='250'>
+<img src='./images/29.jpeg' width='250'>
 
 These buttons will have to be wired individually, although as RCD mentioned you could use only 3 wires, but I figured I might as well do the 4 wires.
 
@@ -137,13 +137,13 @@ These buttons will have to be wired individually, although as RCD mentioned you 
 
 Finally I wanted to get the touchpad button wired up. To do this, I had to disassemble the original controller just a bit more to retrieve the touchpad board. RDC again [mentions](https://acidmods.com/forum/index.php/topic,44714.0.html#subject_337728) taking apart the button on the touchpad board and soldering to that to make things easier. This is what I did. Simply just need to raise the flap on one side of the button for the top to come off.
 
-<img src='https://imgur.com/0hPxJl3.jpg' width='250'>
-<img src='https://imgur.com/h7Fws0H.jpg' width='250'>
-<img src='https://imgur.com/ESMVuzI.jpg' width='250'>
+<img src='./images/30.jpeg' width='250'>
+<img src='./images/31.jpeg' width='250'>
+<img src='./images/32.jpeg' width='250'>
 
 Then solder the wire to the center circle of this button and not the outer two spots.
 
-<img src='https://imgur.com/4z5eSJF.jpg' width='250'>
+<img src='./images/33.jpeg' width='250'>
 
 ## SOCD Cleaning
 
@@ -151,8 +151,8 @@ It turns out the dualsense has D+U=N and L+R=N SOCD already.
 
 On my previous padhack I used the cheap method of soldering inputs to some 7400 chips (SN74LS00N).
 
-<img src='https://imgur.com/LzW8qae.jpg' width='250'>
-<img src='https://imgur.com/FJFOveB.jpg' width='250'>
+<img src='./images/34.jpeg' width='250'>
+<img src='./images/35.jpeg' width='250'>
 
 I learned this method of SOCD cleaning from /u/Sire_Charles [here in the comments](https://www.reddit.com/r/fightsticks/comments/f5ysgy/available_socd_cleaners/), which then led to the [SRK forums](https://archive.supercombo.gg/t/guide-preventing-socd-on-any-common-ground-pcb-by-using-7400-chips/135312) which had a bit more information.
 
@@ -164,41 +164,70 @@ First thing was to figure out how to even power the thing off of the dualsense b
 
 I attached a wire to the pad/spot that was reading 3.3v and tested it out on the arduino clone to see if it would power on, and to my surprise it did.
 
-<img src='https://imgur.com/OHqXyz5.jpg' width='250'>
+<img src='./images/36.jpeg' width='250'>
 
 Next was figuring out writing code for the SOCD cleaning and wiring up the directional inputs. After doing some googling, I ran into a post, which turned out to be /u/fluffhead123. They had already [done this](https://www.reddit.com/r/fightsticks/comments/u7elzb/arduino_socd_code/) as well.
 
 I wanted to do more with this arduino clone, the original plan was to put in an oled like how the [GP2040-CE](https://gp2040-ce.info/#/) firmware has; however I had no clue how I would even accomplish that. I settled on adding an LED that would display which SOCD cleaning method was chosen — using the code /u/fluffhead123 had modified. I also added writing to the EEPROM to store which SOCD cleaning method was previously chosen, so that it would not revert back to a default SOCD cleaning method and instead restore to the previously chosen SOCD cleaning method.
 
-[Video of SOCD selection LED](https://imgur.com/ghfN2jp)
+[Video of SOCD selection LED](./images/vid1.mp4)
 
-*I changed/swapped the variable names on outs and ins, because otherwise it didn't really make sense in my head... For anyone that might end up using this. Looking back at it now, I really shouldn't have as not it doesn't make sense.*
+*I changed/swapped the variable names on outs and ins, because otherwise it didn't really make sense in my head... For anyone that might end up using this. Looking back at it now, I really should not have done so, as it doesn't make sense.*
 
-[SOCD code with LED indicator code](https://pastebin.com/E89ZFXmf).
+[SOCD code with LED indicator code](./old/socd_cleaner_with_led_original.ino).
 
 ## Putting it all together
 
 After printing everything out it was time to put everything together. Not much to say about this part, this is more case specific. I decided to cut holes to allow the dualsense audio port to hang out so I could use it. Then I used the same usb panel mount adapter /u/fluffhead123 used, however I ended up deciding I didn't want it on the outside. Finally I made a hole for the arduino, the chosen SOCD cleaning method LED, and a reset button for the arduino for faster SOCD changing (rather than turning off the controller and turning it back on).
 
-<img src='https://imgur.com/dxGHS4K.jpg' width='250'>
-<img src='https://imgur.com/DwmGvSs.jpg' width='250'>
-<img src='https://imgur.com/QUN9m9P.jpg' width='250'>
-<img src='https://imgur.com/yr67T97.jpg' width='250'>
-<img src='https://imgur.com/mmrOIgI.jpg' width='250'>
-<img src='https://imgur.com/TUjYF58.jpg' width='250'>
-<img src='https://imgur.com/Erp3xDw.jpg' width='250'>
-<img src='https://imgur.com/MbnWVtm.jpg' width='250'>
-<img src='https://imgur.com/78aHRfZ.jpg' width='250'>
-<img src='https://imgur.com/qhVYFNM.jpg' width='250'>
+<img src='./images/37.jpeg' width='250'>
+<img src='./images/38.jpeg' width='250'>
+<img src='./images/39.jpeg' width='250'>
+<img src='./images/40.jpeg' width='250'>
+<img src='./images/41.jpeg' width='250'>
+<img src='./images/42.jpeg' width='250'>
+<img src='./images/43.jpeg' width='250'>
+<img src='./images/44.jpeg' width='250'>
+<img src='./images/45.jpeg' width='250'>
+<img src='./images/46.jpeg' width='250'>
 
 ## Final Results
 
 Overall I'm happy to have made this padhack, even though it is very similar to the last one I made. This one is wireless, and ever so slightly slimmer. I really only made this to give myself something to do and challenge what I learned the last time. I'm slightly not happy with how some of the printed parts came out, and may end up redoing them in the future.
 
-<img src='https://imgur.com/Xq66xPu.jpg' width='250'>
-<img src='https://imgur.com/hUkOtM4.jpg' width='250'>
-<img src='https://imgur.com/9qi0ec4.jpg' width='250'>
-<img src='https://imgur.com/aybQwHX.jpg' width='250'>
-<img src='https://imgur.com/1ZWfjN8.jpg' width='250'>
-<img src='https://imgur.com/FVVnSwI.jpg' width='250'>
-<img src='https://imgur.com/NbM5hVS.jpg' width='250'>
+<img src='./images/47.jpeg' width='250'>
+<img src='./images/48.jpeg' width='250'>
+<img src='./images/49.jpeg' width='250'>
+<img src='./images/50.jpeg' width='250'>
+<img src='./images/51.jpeg' width='250'>
+<img src='./images/52.jpeg' width='250'>
+<img src='./images/53.jpeg' width='250'>
+
+
+## Further Changes
+
+I've since added a few features, from where this write-up ended. The dualsense received an update to allow profiles for the 4 face buttons while holding the home button. I've added a visual loading bar when turning on the controller holding one of the buttons to display which profile is currently loading.
+
+<img src='./images/11.jpg' width='500'>
+
+There's a bit of jank to the system they've added with this, where if you hold the buttons too long the controller goes into pairing mode. I was tired of dealing with that, and wanted a timer to see how long I have to hold the buttons.
+
+I've also added a battery visual indicator. I was hoping to do this without changing any wiring. But reading from the internal adc on the pico was giving a constant value regardless of battery level. I'm not too familiar with what is going on, but after some research I think the controller uses some sort of power regulation, so the constant reading makes sense.
+
+So I ended up having to tap into the battery directly, bypassing the controller, and reading the levels with an ADC pin on the pico. This required adding a voltage divider setup, so the pico wouldn't receive unsafe voltages.
+
+<img src='./images/13.png' width='500'>
+
+Here's a cool mockup of that I drew, as I didn't take any pictures of it. Obviously leaving out all the other wiring I previously had. I made a sorta vampire connection off of the positive/red wire, connected two resistors in series, the first being a 100k Ohm resistor and the second being a 220k Ohm resistor. So that when it connects back to common ground the pico/dualsense isn't receiving anything crazy. It should be almost 0V.
+
+<img src='./images/14.png' width='500'>
+
+Here's a simulation from https://falstad.com/circuit/. You can see at the end it's reading 0V going back to ground.
+
+Then between the two resistors, you run a wire to an ADC pin on the pico. I ended up using the GP28 pin which is ADC2 on the pico.
+
+I then changed the code and measured (for my battery), the maximum voltage reading and minimum voltage reading to be able to figure out the battery charge level and be able to display it. The code I have will be different than what the normal battery comes with a dualsense, sense I replaced it with a: SHENMZ PS5 Controller Battery - 4800mAh - 3.85V standard - 4.35v charge limit - 18.48Wh watt-hour.
+
+<img src='./images/12.jpg' width='500'>
+
+So I ended up cramming in the meter on the right hand side you can see here. I haven't done too much further testing of this meter, but I imagine I'll keep what I have done here. The code might change ever so slightly.

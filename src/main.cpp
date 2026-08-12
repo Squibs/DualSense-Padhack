@@ -117,7 +117,7 @@ uint32_t lastBatteryCheck = -30000;
 int batteryStage = 0;
 
 unsigned int homeButtonPressTime = 0;
-const unsigned int HOME_HOLD_TIME = 5100; // 5.1 seconds in milliseconds
+const unsigned int HOME_HOLD_TIME = 5200; // 5.2 seconds in milliseconds
 bool homeButtonPressed = false;
 
 // core0 setup

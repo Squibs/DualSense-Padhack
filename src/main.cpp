@@ -116,6 +116,10 @@ bool button_press_debug = true;
 uint32_t lastBatteryCheck = -30000;
 int batteryStage = 0;
 
+unsigned int homeButtonPressTime = 0;
+const unsigned int HOME_HOLD_TIME = 5100; // 5.1 seconds in milliseconds
+bool homeButtonPressed = false;
+
 // core0 setup
 void setup() {
   Serial.begin(9600);  // Allows printlns / monitoring
@@ -215,7 +219,8 @@ void loop() {
   controlButtonVisualRender(btnCircle, circleFlag, circleFlag2);
   controlButtonVisualRender(btnR2, r2Flag, r2Flag2);
   controlButtonVisualRender(btnL2, l2Flag, l2Flag2);
-  controlButtonVisualRender(btnHome, homeFlag, homeFlag2);
+  // controlButtonVisualRender(btnHome, homeFlag, homeFlag2);
+  controlHomeButtonAnimated(); // handle home button differently to display power off timer
   controlButtonVisualRender(btnShare, shareFlag, shareFlag2);
   controlButtonVisualRender(btnOptions, optionsFlag, optionsFlag2);
   controlButtonVisualRender(btnR3, r3Flag, r3Flag2);
@@ -306,6 +311,69 @@ void loop1() {
   controlButtonVisualRender(downOUT, downFlag, downFlag2);
   controlButtonVisualRender(leftOUT, leftFlag, leftFlag2);
   controlButtonVisualRender(rightOUT, rightFlag, rightFlag2);
+}
+
+// handle home button with special animation, for visual of how long to hold button to turn off controller
+void controlHomeButtonAnimated() {
+  uint8_t readButton = digitalRead(btnHome);
+
+  // button pressed (LOW)
+  if (!readButton && homeFlag) {
+    homeFlag = false;
+    homeFlag2 = true;
+    homeButtonPressed = true;
+    homeButtonPressTime = millis();
+    buttonPressedLogger("Home", true);
+
+    // clear the area where the home button indicator is
+    display.fillCircle(4, 3, 4, 0);
+  }
+
+  // button is being held - draw the animated circle
+  if (homeButtonPressed && !readButton) {
+    unsigned int elapsedTime = millis() - homeButtonPressTime;
+    float percentRemaining = 1.0f - (elapsedTime / (float)HOME_HOLD_TIME);
+
+    // clamp to 0-1
+    if (percentRemaining < 0) percentRemaining = 0;
+    // clear the area and redraw
+    display.fillCircle(4, 3, 4, 0);
+    drawCircularProgress(4, 3, 3, percentRemaining);
+  }
+
+  // button released (HIGH)
+  if (readButton && homeFlag2) {
+    homeFlag = true;
+    homeFlag2 = false;
+    homeButtonPressed = false;
+    buttonPressedLogger("Home", false);
+
+    // clear and redraw empty circle
+    display.fillCircle(4, 3, 4, 0);
+    display.drawCircle(4, 3, 3, 1);
+    drawButtonLabels(16);
+  }
+}
+
+// draws a circular progress indicator that empties anti-clockwise
+// percentRemaining = 0.0 to 1.0 (1.0 = full circle, 0.0 = empty)
+void drawCircularProgress(int16_t centerX, int16_t centerY, uint8_t radius, float percentRemaining) {
+  display.drawCircle(centerX, centerY, radius, 1);
+  
+  // keep center pixel lit up while held
+  display.drawPixel(centerX, centerY, 1);
+  
+  float angleStart = -90.0f;
+  float angleFill = 360.0f * percentRemaining;
+  
+  // draw radial lines from center to arc edge to fill the wedge
+  for (float angle = angleStart; angle < angleStart + angleFill; angle += 0.25) {
+    float radians = angle * M_PI / 180.0f;
+    int16_t x = centerX + round((radius - 1) * cos(radians));
+    int16_t y = centerY + round((radius - 1) * sin(radians));
+    
+    display.drawLine(centerX, centerY, x, y, 1);
+  }
 }
 
 void drawProgressBar(uint8_t x, uint8_t y, uint8_t w, uint8_t h) {

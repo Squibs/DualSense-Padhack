@@ -26,3 +26,5 @@ float read_battery_percent();
 float read_vsys();
 void drawBatteryGauge();
 void drawBatteryPercent(int stage);
+void controlHomeButtonAnimated();
+void drawCircularProgress(int16_t centerX, int16_t centerY, uint8_t radius, float percentRemaining);
